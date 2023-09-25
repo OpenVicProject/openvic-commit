@@ -1,0 +1,31 @@
+name: Perform OpenVic Commit of Files
+description: Perform OpenVic Commit of Files
+inputs:
+  target-repo-name:
+    description: ""
+    required: true
+  copy-source:
+    description: ""
+    required: true
+  target-branch:
+    description: ""
+    default: "master"
+  commit-message:
+    description: ""
+    default: "Automatic publish from github.com/${{ inputs.target-repo-name }}"
+  current-directory:
+    description: ""
+    default: "./"
+runs:
+  using: "composite"
+  steps:
+    - name: Perform Commit and Push
+      shell: bash
+      run: |
+        cd ${{ inputs.current-directory }}
+        git clone https://.:${{ secrets.GITHUB_TOKEN }}@github.com/${{ inputs.target-repo-name }} ${{ inputs.target-repo-name }}
+        yes | cp -rf ${{ inputs.copy-source }} ${{ inputs.target-repo-name }}
+        cd ${{ inputs.target-repo-name }}
+        git add -A .
+        git diff-index --quiet HEAD || git commit -m "${{ inputs.commit-message }}"
+        git push origin ${{ inputs.target-branch }}
